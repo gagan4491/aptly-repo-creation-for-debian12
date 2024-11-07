@@ -1,0 +1,170 @@
+
+# Custom Debian 12 (Bookworm) Repository with Aptly
+
+This guide will help you install Aptly and create a custom Debian 12 repository on your system.
+
+## Prerequisites
+
+- Debian 12 (Bookworm) system
+- Root or user with `sudo` privileges
+
+## Step 1: Install Required Packages
+
+1. **Update your package list:**
+   ```bash
+   sudo apt update
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   sudo apt install gnupg2 curl wget aptly screen
+   ```
+
+## Step 2: Install and Configure Aptly
+
+1. **Create Aptly working directory:**
+   ```bash
+   mkdir -p ~/aptly
+   cd ~/aptly
+   ```
+
+2. **Initialize Aptly (optional, only needed for first-time setup):**
+   ```bash
+   aptly repo create -distribution=bookworm -component=main my-custom-repo
+   ```
+
+## Step 3: Import Necessary GPG Keys
+
+1. **Import Debian archive keys:**
+   ```bash
+   gpg --no-default-keyring --keyring /usr/share/keyrings/debian-archive-keyring.gpg --export | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+   ```
+
+2. **Import other required keys from a keyserver:**
+   ```bash
+   gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keyserver.ubuntu.com --recv-keys \
+   0E98404D386FA1D9 6ED0E7B82643E131 F8D2585B8783D481 54404762BBB6E853 BDE6D2B9216EC7A8 9334A25F8507EFA5 \
+   7EA0A9C3F273FCD8 B188E2B695BD4743 B1998361219BD9C9
+   ```
+
+3. **Manually import `Release.key` for specific repositories if needed:**
+   ```bash
+   wget -O - https://repo.percona.com/apt/Release.key | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+   ```
+
+## Step 4: Create and Run the Script
+
+1. **Create a script file (`aptly_deb_12.sh`) with the following content:**
+
+   ```bash
+   #!/bin/bash
+
+   # Function to check if a mirror exists
+   check_mirror() {
+       if aptly mirror list | grep -q "$1"; then
+           echo "Mirror $1 already exists."
+       else
+           echo "Creating mirror $1..."
+           $2  # Run the command passed as the second argument
+       fi
+   }
+
+   # Create mirrors only if they don't exist
+   check_mirror "bookworm-main" "aptly mirror create bookworm-main http://deb.debian.org/debian bookworm main"
+   check_mirror "bookworm-security" "aptly mirror create bookworm-security http://security.debian.org/debian-security bookworm-security main"
+   check_mirror "bookworm-updates" "aptly mirror create bookworm-updates http://deb.debian.org/debian bookworm-updates main"
+   check_mirror "percona-bookworm-main" "aptly mirror create percona-bookworm-main http://repo.percona.com/apt bookworm main"
+   check_mirror "percona-prel-bookworm-main" "aptly mirror create percona-prel-bookworm-main http://repo.percona.com/prel/apt bookworm main"
+   check_mirror "docker-bookworm-stable" "aptly mirror create docker-bookworm-stable https://download.docker.com/linux/debian bookworm stable"
+   check_mirror "php-bookworm-main" "aptly mirror create php-bookworm-main https://packages.sury.org/php/ bookworm main"
+   check_mirror "azul-repo-java-stable" "aptly mirror create azul-repo-java-stable https://repos.azul.com/zulu/deb/ stable main"
+
+   # Update mirrors
+   echo "Updating mirrors..."
+   aptly mirror update bookworm-main
+   aptly mirror update bookworm-security
+   aptly mirror update bookworm-updates
+   aptly mirror update percona-bookworm-main
+   aptly mirror update percona-prel-bookworm-main
+   aptly mirror update docker-bookworm-stable
+   aptly mirror update php-bookworm-main
+   aptly mirror update azul-repo-java-stable
+
+   ########################################################
+   ### Create snapshots if they don't already exist
+   create_snapshot() {
+       if aptly snapshot list | grep -q "$1"; then
+           echo "Snapshot $1 already exists."
+       else
+           echo "Creating snapshot $1..."
+           aptly snapshot create "$1" from mirror "$1"
+       fi
+   }
+
+   create_snapshot "bookworm-main"
+   create_snapshot "bookworm-security"
+   create_snapshot "bookworm-updates"
+   create_snapshot "percona-bookworm-main"
+   create_snapshot "percona-prel-bookworm-main"
+   create_snapshot "docker-bookworm-stable"
+   create_snapshot "php-bookworm-main"
+   create_snapshot "azul-repo-java-stable"
+
+   echo "done till snapshot"
+
+   # Publish the repository if not already published
+   if aptly publish list | grep -q "bookworm"; then
+       echo "Publication for bookworm already exists."
+   else
+       echo "Publishing repository..."
+       aptly publish snapshot -component=bookworm-main,bookworm-security,bookworm-updates,percona-bookworm-main,percona-prel-bookworm-main,docker-bookworm-stable,php-bookworm-main,azul-repo-java-stable -distribution=bookworm bookworm-main bookworm-security bookworm-updates percona-bookworm-main percona-prel-bookworm-main docker-bookworm-stable php-bookworm-main azul-repo-java-stable
+   fi
+   ```
+
+2. **Make the script executable:**
+   ```bash
+   chmod +x aptly_deb_12.sh
+   ```
+
+3. **Run the script using `screen` or `tmux` to keep it running even if your session disconnects:**
+   ```bash
+   screen -S aptly-script ./aptly_deb_12.sh
+   ```
+
+   - To detach from `screen`, press `Ctrl + A`, then `D`.
+   - Reattach using:
+     ```bash
+     screen -r aptly-script
+     ```
+# or 
+
+3. **Run the script using `nohup` to keep it running even if your session disconnects:**
+   ```bash
+   nohup ./aptly_deb_12.sh > aptly_log.out 2>&1 &
+   ```
+
+   - To get the logs :
+     ```bash
+     tail -f aptly_log.out
+     ```
+I would use the nohup :) 
+    
+## Step 5: Access and Use Your Repository
+
+1. **Serve the repository using a simple web server:**
+   ```bash
+   cd ~/.aptly/public
+   python3 -m http.server 8080
+   ```
+
+2. **Add your custom repository to client machines:**
+   ```bash
+   echo "deb http://<your-server-ip>:8080 bookworm main" | sudo tee /etc/apt/sources.list.d/my-custom-repo.list
+   ```
+
+3. **Update the package list on client machines:**
+   ```bash
+   sudo apt update
+   ```
+
+Congratulations! You have successfully set up and published a custom Debian 12 repository using Aptly.

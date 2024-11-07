@@ -1,0 +1,33 @@
+[root@debian9-repo (10.102.70.192) ~]  gpg --default-new-key-algo rsa2048 --gen-key --keyring pubring.gpg
+gpg (GnuPG) 2.1.18; Copyright (C) 2017 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+gpg: keyblock resource '/root/.gnupg/pubring.gpg': No such file or directory
+Note: Use "gpg --full-generate-key" for a full featured key generation dialog.
+
+GnuPG needs to construct a user ID to identify your key.
+
+Real name: My-aptly
+Email address: jesus.bianco@alertdriving.com
+You selected this USER-ID:
+    "My-aptly <jesus.bianco@alertdriving.com>"
+
+Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+
+
+gpg: key 052A89C3C19D0E96 marked as ultimately trusted
+gpg: directory '/root/.gnupg/openpgp-revocs.d' created
+gpg: revocation certificate stored as '/root/.gnupg/openpgp-revocs.d/92676ADF884EB8E98694B98F052A89C3C19D0E96.rev'
+public and secret key created and signed.
+
+Note that this key cannot be used for encryption.  You may want to use
+the command "--edit-key" to generate a subkey for this purpose.
+pub   rsa2048 2020-11-05 [SC] [expires: 2022-11-05]
+      92676ADF884EB8E98694B98F052A89C3C19D0E96
+      92676ADF884EB8E98694B98F052A89C3C19D0E96
+uid                      My-aptly <jesus.bianco@alertdriving.com>

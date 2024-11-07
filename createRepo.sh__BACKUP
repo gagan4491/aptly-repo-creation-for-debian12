@@ -1,0 +1,77 @@
+#!/bin/bash
+
+#aptly mirror create -with-sources=true -filter-with-deps -architectures=amd64 -with-udebs=true stretch-main http://deb.debian.org/debian/ stretch main
+#sleep 10
+
+#aptly mirror create -with-sources=true -with-udebs=true stretch-security http://security.debian.org/debian-security stretch/updates main contrib
+#sleep 10
+
+#aptly mirror create -with-sources=true -with-udebs=true stretch-updates http://deb.debian.org/debian/ stretch-updates main contrib
+#sleep 10
+
+#aptly mirror create -architectures=amd64 percona-stretch-main http://repo.percona.com/percona/apt stretch main
+#sleep 10
+
+#aptly mirror create -architectures=amd64 percona-prel-stretch-main http://repo.percona.com/prel/apt stretch main
+#sleep 10
+
+#aptly mirror create -architectures=amd64 docker-stretch-stable https://download.docker.com/linux/debian stretch stable
+#sleep 10
+
+#aptly mirror create -architectures=amd64 php-stretch-main https://packages.sury.org/php/ stretch main
+#sleep 10
+
+#######################################################
+##  update will download the packages
+
+aptly mirror update stretch-main
+sleep 10
+
+aptly mirror update stretch-security
+sleep 10
+
+aptly mirror update stretch-updates
+sleep 10
+
+aptly mirror update percona-stretch-main
+sleep 10
+
+aptly mirror update percona-prel-stretch-main
+sleep 10
+
+aptly mirror update docker-stretch-stable
+sleep 10
+
+aptly mirror update php-stretch-main
+sleep 10
+
+#######################################################
+##  create snapshots
+
+aptly snapshot create stretch-main from mirror stretch-main
+sleep 10
+
+aptly snapshot create stretch-security from mirror stretch-security
+sleep 10
+
+aptly snapshot create stretch-updates from mirror stretch-updates
+sleep 10
+
+aptly snapshot create percona-stretch-main from mirror percona-stretch-main
+sleep 10
+
+aptly snapshot create percona-prel-stretch-main from mirror percona-prel-stretch-main
+sleep 10
+
+aptly snapshot create docker-stretch-stable from mirror docker-stretch-stable
+sleep 10
+
+aptly snapshot create php-stretch-main from mirror php-stretch-main
+sleep 10
+
+#######################################################
+##  publish from snapshots
+
+aptly publish snapshot -component=stretch-main,stretch-security,stretch-updates,percona-stretch-main,percona-prel-stretch-main,docker-stretch-stable,php-stretch-main -distribution=stretch stretch-main stretch-security stretch-updates percona-stretch-main percona-prel-stretch-main docker-stretch-stable php-stretch-main
+sleep 10
+
