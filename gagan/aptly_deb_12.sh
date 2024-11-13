@@ -17,7 +17,7 @@ check_mirror "bookworm-security" "aptly mirror create -force-components bookworm
 check_mirror "bookworm-updates" "aptly mirror create bookworm-updates http://deb.debian.org/debian bookworm-updates main"
 check_mirror "percona-bookworm-main" "aptly mirror create percona-bookworm-main http://repo.percona.com/apt bookworm main"
 check_mirror "percona-prel-bookworm-main" "aptly mirror create percona-prel-bookworm-main http://repo.percona.com/prel/apt bookworm main"
-check_mirror "docker-bookworm-stable" "aptly mirror create -architectures=amd64,arm64,armhf docker-bookworm-stable https://download.docker.com/linux/debian bookworm stable"
+check_mirror "docker-bookworm-stable" "aptly mirror create -architectures=amd64 docker-bookworm-stable https://download.docker.com/linux/debian bookworm stable"
 check_mirror "php-bookworm-main" "aptly mirror create php-bookworm-main https://packages.sury.org/php/ bookworm main"
 check_mirror "azul-repo-java-stable" "aptly mirror create azul-repo-java-stable https://repos.azul.com/zulu/deb/ stable main"
 
@@ -60,8 +60,13 @@ if aptly publish list | grep -q "bookworm"; then
 else
     echo "Publishing repository..."
     aptly publish snapshot -component=bookworm-main,bookworm-security,bookworm-updates,percona-bookworm-main,percona-prel-bookworm-main,docker-bookworm-stable,php-bookworm-main,azul-repo-java-stable -distribution=bookworm bookworm-main bookworm-security bookworm-updates percona-bookworm-main percona-prel-bookworm-main docker-bookworm-stable php-bookworm-main azul-repo-java-stable
+
+    echo "Moving .aptly directory and setting permissions..."
+    mv /root/.aptly /.aptly
+    chmod -R 755 /.aptly
+
 fi
 
 
 
-##### run with no hup : nohup ./aptly_deb_12.sh > aptly_log.out 2>&1 &   ; tail -f /root/gagan/aptly_log.out
+##### run with no hup : nohup ./gagan/aptly_deb_12.sh > aptly_log.out 2>&1 &   ; tail -f /root/gagan/aptly_log.out
