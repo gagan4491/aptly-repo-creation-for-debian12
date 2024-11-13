@@ -166,5 +166,42 @@ I would use the nohup :)
    ```bash
    sudo apt update
    ```
+   
+
+
+# Note : 
+` do change the .aptly.config path from /root/.aptly/  to  /.aptly  
+`
+and move the /root/.aptly to /.aptly 
+and run chmod -R 755 /.aptly 
+
+
+then add the nginx : 
+sudo nano /etc/nginx/sites-available/default
+
+```
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # Replace with your server's IP or hostname
+    server_name 10.102.70.20;
+
+    # Point to your aptly public directory
+    root /.aptly/public;
+
+    # Enable autoindexing for the repository
+    autoindex on;
+
+    # Location block to serve the repository
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
+```
+
+
+
 
 Congratulations! You have successfully set up and published a custom Debian 12 repository using Aptly.
