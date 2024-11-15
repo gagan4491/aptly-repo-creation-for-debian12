@@ -205,3 +205,7 @@ server {
 
 
 Congratulations! You have successfully set up and published a custom Debian 12 repository using Aptly.
+
+
+you can use your repo as : 
+deb [trusted=yes] http://<ip of the machine >/ bookworm azul-repo-java-stable bookworm-main bookworm-security b>

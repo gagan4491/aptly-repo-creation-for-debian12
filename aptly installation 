@@ -1,6 +1,6 @@
 sudo apt update
 sudo apt upgrade -y
-sudo apt install gnupg2 curl -y
+sudo apt install gnupg2 curl nginx-extras -y
 curl -fsSL https://www.aptly.info/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/aptly-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/aptly-archive-keyring.gpg] https://repo.aptly.info/ aptly main" | sudo tee /etc/apt/sources.list.d/aptly.list
 sudo apt update -y
@@ -10,13 +10,12 @@ aptly version
 
 gpg --no-default-keyring --keyring /usr/share/keyrings/debian-archive-keyring.gpg --export | gpg --no-default-keyring --keyring trustedkeys.gpg --import
 
-# Import missing public keys from the keyserver
 gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keyserver.ubuntu.com --recv-keys \
 0E98404D386FA1D9 6ED0E7B82643E131 F8D2585B8783D481 54404762BBB6E853 BDE6D2B9216EC7A8 9334A25F8507EFA5 \
 7EA0A9C3F273FCD8 B188E2B695BD4743 B1998361219BD9C9
 
 wget -O - https://repo.percona.com/apt/Release.key | gpg --no-default-keyring --keyring trustedkeys.gpg --import
-
+gpg --gen-key
 
 #####
 

@@ -12,9 +12,10 @@ check_mirror() {
 
 # Create mirrors only if they don't exist
 
-check_mirror "bookworm-main" "aptly mirror create bookworm-main http://deb.debian.org/debian bookworm main"
-check_mirror "bookworm-security" "aptly mirror create -force-components bookworm-security http://security.debian.org/debian-security bookworm-security main"
-check_mirror "bookworm-updates" "aptly mirror create bookworm-updates http://deb.debian.org/debian bookworm-updates main"
+check_mirror "bookworm-main" "aptly mirror create -architectures=amd64 bookworm-main http://deb.debian.org/debian bookworm main"
+check_mirror "bookworm-security" "aptly mirror create -architectures=amd64 -force-components bookworm-security http://security.debian.org/debian-security bookworm-security main"
+check_mirror "bookworm-updates" "aptly mirror create -architectures=amd64 bookworm-updates http://deb.debian.org/debian bookworm-updates main"
+
 check_mirror "percona-bookworm-main" "aptly mirror create percona-bookworm-main http://repo.percona.com/apt bookworm main"
 check_mirror "percona-prel-bookworm-main" "aptly mirror create percona-prel-bookworm-main http://repo.percona.com/prel/apt bookworm main"
 check_mirror "docker-bookworm-stable" "aptly mirror create -architectures=amd64 docker-bookworm-stable https://download.docker.com/linux/debian bookworm stable"
