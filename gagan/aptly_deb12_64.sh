@@ -13,7 +13,6 @@ check_mirror() {
 }
 
 # Create mirrors only if they don't exist
-
 check_mirror "bookworm-main" "aptly mirror create -architectures=amd64 bookworm-main http://deb.debian.org/debian bookworm main"
 sleep 3;
 check_mirror "bookworm-security" "aptly mirror create -architectures=amd64 -force-components bookworm-security http://security.debian.org/debian-security bookworm-security main"
@@ -28,6 +27,12 @@ check_mirror "docker-bookworm-stable" "aptly mirror create -architectures=amd64 
 sleep 3;
 check_mirror "php-bookworm-main" "aptly mirror create -architectures=amd64 php-bookworm-main https://packages.sury.org/php/ bookworm main"
 sleep 3;
+check_mirror "postgresql-14" "aptly mirror create -architectures=amd64  postgresql-14 http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main"
+
+
+
+sleep 3;
+
 # Update mirrors
 echo "Updating mirrors..."
 sleep 10;
@@ -44,6 +49,8 @@ sleep 3;
 aptly mirror update docker-bookworm-stable
 sleep 3;
 aptly mirror update php-bookworm-main
+sleep 3;
+aptly mirror update postgresql-14
 sleep 10;
 
 ########################################################
@@ -71,15 +78,30 @@ create_snapshot "docker-bookworm-stable"
 sleep 3;
 create_snapshot "php-bookworm-main"
 sleep 3;
+create_snapshot "postgresql-14"
+sleep 3;
 echo "done till snapshot"
 sleep 10;
+
+
+curl -O https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+
+mkdir -p /aptly-local-packages
+mv percona-release_latest.generic_all.deb /aptly-local-packages/
+
+aptly repo create -distribution=generic -component=main percona-release
+aptly repo add percona-release /aptly-local-packages/
+
+
+
+
 
 # Publish the repository if not already published
 if aptly publish list | grep -q "bookworm"; then
     echo "Publication for bookworm already exists."
 else
     echo "Publishing repository..."
-    aptly publish snapshot -component=bookworm-main,bookworm-security,bookworm-updates,percona-bookworm-main,percona-prel-bookworm-main,docker-bookworm-stable,php-bookworm-main -distribution=bookworm bookworm-main bookworm-security bookworm-updates percona-bookworm-main percona-prel-bookworm-main docker-bookworm-stable php-bookworm-main
+    aptly publish snapshot -component=bookworm-main,bookworm-security,bookworm-updates,percona-bookworm-main,percona-prel-bookworm-main,docker-bookworm-stable,php-bookworm-main,postgresql-14 -distribution=bookworm bookworm-main bookworm-security bookworm-updates percona-bookworm-main percona-prel-bookworm-main docker-bookworm-stable php-bookworm-main postgresql-14
 fi
 
 echo "Finalizing aptly directory..."
@@ -94,3 +116,4 @@ fi
 
 
 ##### run with no hup : nohup ./aptly_deb12_64.sh > aptly_log.out 2>&1 &   ; tail -f /root/gagan/aptly_log.out
+##deb [trusted=yes signed-by=/usr/share/keyrings/aptly-keyring.gpg]  http://10.102.70.20/ bookworm bookworm-main bookworm-security bookworm-updates docker-bookworm-stable percona-bookworm-main percona-prel-bookworm-main php-bookworm-main postgresql-14

@@ -8,11 +8,10 @@ sudo apt install aptly -y
 aptly version
 
 
-gpg --no-default-keyring --keyring /usr/share/keyrings/debian-archive-keyring.gpg --export | gpg --no-default-keyring --keyring trustedkeys.gpg --import
 
 gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keyserver.ubuntu.com --recv-keys \
 0E98404D386FA1D9 6ED0E7B82643E131 F8D2585B8783D481 54404762BBB6E853 BDE6D2B9216EC7A8 9334A25F8507EFA5 \
-7EA0A9C3F273FCD8 B188E2B695BD4743 B1998361219BD9C9
+7EA0A9C3F273FCD8 B188E2B695BD4743 B1998361219BD9C9 7FCC7D46ACCC4CF8
 
 wget -O - https://repo.percona.com/apt/Release.key | gpg --no-default-keyring --keyring trustedkeys.gpg --import
 gpg --gen-key

@@ -159,7 +159,7 @@ I would use the nohup :)
 
 2. **Add your custom repository to client machines:**
    ```bash
-   echo "deb http://<your-server-ip>:8080 bookworm main" | sudo tee /etc/apt/sources.list.d/my-custom-repo.list
+      deb [signed-by=/usr/share/keyrings/aptly-keyring.gpg] http://10.102.70.20/ bookworm bookworm-main bookworm-security bookworm-updates docker-bookworm-stable percona-bookworm-main percona-prel-bookworm-main php-bookworm-main
    ```
 
 3. **Update the package list on client machines:**
@@ -201,11 +201,40 @@ server {
 
 ```
 
+run before the publisbinbt the repo :
 
+
+curl -O https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+
+mkdir -p /aptly-local-packages
+mv percona-release_latest.generic_all.deb /aptly-local-packages/
+
+aptly repo create -distribution=generic -component=main percona-release
+aptly repo add percona-release /aptly-local-packages/
 
 
 Congratulations! You have successfully set up and published a custom Debian 12 repository using Aptly.
+set up the gpg key : 
+
+
+gpg --list-keys
+nano .aptly.conf
+gpg --armor --export 6A622DA5C6CD42AD > /.aptly/public/repo-key.gpg ## 6A^.......2AD is the key which we will get bygpg --list-keys
 
 
 you can use your repo as : 
-deb [trusted=yes] http://<ip of the ma>/ bookworm azul-repo-java-stable bookworm-main bookworm-security b>
+apt update 
+apt install gnupg -y
+wget http://10.102.70.20/repo-key.gpg
+sudo gpg --dearmor -o /usr/share/keyrings/aptly-keyring.gpg repo-key.gpg
+
+deb [trusted=yes signed-by=/usr/share/keyrings/aptly-keyring.gpg]  http://10.102.70.20/ bookworm bookworm-main bookworm-security bookworm-updates docker-bookworm-stable percona-bookworm-main percona-prel-bookworm-main php-bookworm-main postgresql-14
+
+
+
+mkdir -p /aptly-local-packages
+mv percona-release_latest.generic_all.deb /aptly-local-packages/
+
+
+aptly repo create -distribution=generic -component=main percona-release
+aptly repo add percona-release /aptly-local-packages/
